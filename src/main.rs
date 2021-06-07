@@ -1,19 +1,19 @@
-use serde::{Deserialize, Serialize};
-use std::env;
-use std::fs;
-use toml;
-
 mod activities_proxy;
 mod auth_proxy;
 
 use crate::activities_proxy::get_account_activities;
 use crate::auth_proxy::{get_authorization, AuthorizationDetails};
+use serde::{Deserialize, Serialize};
+use std::env;
+use std::fs;
+use toml;
 
 static QUESTRADE_CONFIG_FILE_PATH: &str = "Questrade.toml";
 
 #[derive(Serialize, Deserialize, Debug)]
 struct QuestradeConfig {
     account_id: String,
+    account_start_time: String,
     refresh_token: String,
 }
 
@@ -37,13 +37,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     fs::write(QUESTRADE_CONFIG_FILE_PATH, updated_questrade_config)?;
     println!("Updated refresh token");
 
-    get_account_activities(
+    // read account activities since account start
+    let all_activities = get_account_activities(
         authz_details,
-        questrade_config.account_id,
-        "2021-05-20T00:00:00Z",
-        "2021-06-06T23:59:00Z",
+        questrade_config.account_id.clone(),
+        questrade_config.account_start_time.clone(),
     )
     .await?;
+    println!(
+        "Read {} activities in total for account {}",
+        all_activities.activities.len(),
+        questrade_config.account_id.clone(),
+    );
 
     Ok(())
 }
