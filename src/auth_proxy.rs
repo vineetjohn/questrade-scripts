@@ -1,10 +1,10 @@
 use reqwest;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 static REFRESH_TOKEN_IDENTIFIER: &str = "refresh_token";
 static QUESTRADE_AUTH_API_ENDPOINT: &str = "https://login.questrade.com/oauth2/token";
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Deserialize, Debug)]
 pub struct AuthorizationDetails {
     pub refresh_token: String,
     pub api_server: String,
