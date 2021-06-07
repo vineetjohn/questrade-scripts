@@ -1,0 +1,15 @@
+[package]
+name = "questrade-scripts"
+version = "0.1.0"
+authors = ["Vineet John"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+tokio = { version = "^1.0", features = ["full"] }
+reqwest = { version = "^0.11", features = ["json"] }
+serde = { version = "^1.0", features = ["derive"] }
+serde_json = { version = "^1.0" }
+toml = { version = "^0.5" }
+log = { version = "^0.4" }
