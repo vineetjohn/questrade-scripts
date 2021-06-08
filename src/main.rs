@@ -1,8 +1,10 @@
 mod activities_proxy;
 mod auth_proxy;
+mod cap_gains_calculator;
 
 use crate::activities_proxy::get_account_activities;
 use crate::auth_proxy::{get_authorization, AuthorizationDetails};
+use crate::cap_gains_calculator::calculate_capital_gains;
 use serde::{Deserialize, Serialize};
 use std::env;
 use std::fs;
@@ -58,11 +60,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         all_activities.activities.len(),
         questrade_config.account_id.clone(),
     );
-    println!("all_activities: {:?}", all_activities.activities);
 
-    // TODO: build model of the average symbol buy price
-
-    // TODO: for each sale made, calculate ACB for a given tax year
+    // compute capital gains by year
+    let capital_gains_by_year = calculate_capital_gains(all_activities).await?;
+    println!("Capital gains by year: {:?}", capital_gains_by_year);
 
     Ok(())
 }
