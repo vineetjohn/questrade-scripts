@@ -8,8 +8,6 @@ use std::env;
 use std::fs;
 use toml;
 
-static QUESTRADE_CONFIG_FILE_PATH: &str = "Questrade.toml";
-
 #[derive(Serialize, Deserialize, Debug)]
 struct QuestradeConfig {
     account_id: String,
@@ -22,8 +20,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = env::args().collect();
     println!("Application args: {:?}", args);
 
+    if args.len() != 2 {
+        panic!(
+            "The application needs exactly 1 argument, the location of the questrade config file"
+        );
+    }
+    let questrade_config_file_path = args[1].clone();
+    println!(
+        "Reading questrade config from {}",
+        questrade_config_file_path
+    );
+
     // read initial questrade config from local config file
-    let initial_questrade_config = fs::read_to_string(QUESTRADE_CONFIG_FILE_PATH)?;
+    let initial_questrade_config = fs::read_to_string(questrade_config_file_path.clone())?;
     let mut questrade_config: QuestradeConfig = toml::from_str(&initial_questrade_config).unwrap();
 
     // obtain authZ details from questrade by calling the auth endpoint
@@ -34,7 +43,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // update and store the new refresh token in the local file
     questrade_config.refresh_token = authz_details.refresh_token.clone();
     let updated_questrade_config = toml::to_string(&questrade_config).unwrap();
-    fs::write(QUESTRADE_CONFIG_FILE_PATH, updated_questrade_config)?;
+    fs::write(questrade_config_file_path.clone(), updated_questrade_config)?;
     println!("Updated refresh token");
 
     // read account activities since account start
