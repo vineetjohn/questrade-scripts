@@ -58,6 +58,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         all_activities.activities.len(),
         questrade_config.account_id.clone(),
     );
+    println!("all_activities: {:?}", all_activities.activities);
+
+    // TODO: build model of the average symbol buy price
+
+    // TODO: for each sale made, calculate ACB for a given tax year
 
     Ok(())
 }

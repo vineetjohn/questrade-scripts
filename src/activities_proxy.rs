@@ -6,10 +6,14 @@ use std::ops::Add;
 
 static MAX_QUERY_DURATION_DAYS: i64 = 30;
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, PartialEq, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct AccountActivity {
     pub action: String,
     pub symbol: String,
+    pub quantity: f64,
+    pub net_amount: f64,
+    pub settlement_date: String,
 }
 
 #[derive(Deserialize, Debug)]
@@ -53,20 +57,22 @@ pub async fn get_account_activities(
             .await?
             .text()
             .await?;
-        println!("api_response: {}", api_response);
-        let mut account_activities_for_timerange: AccountActivities =
+        let account_activities_for_timerange: AccountActivities =
             serde_json::from_str(&api_response)?;
-        println!(
-            "account_activities_for_timerange: {:?}",
-            account_activities_for_timerange
-        );
         println!(
             "found {} activities for range [start: {}, end: {}]",
             account_activities_for_timerange.activities.len(),
             start_time,
             end_time
         );
-        all_activities.append(&mut account_activities_for_timerange.activities);
+        all_activities.append(
+            &mut account_activities_for_timerange
+                .activities
+                .clone()
+                .into_iter()
+                .filter(|x: &AccountActivity| x.action == "Buy" || x.action == "Sell")
+                .collect(),
+        );
 
         // set new start time to the end time for the next loop iteration
         start_time = end_time;
