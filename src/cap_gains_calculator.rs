@@ -19,7 +19,7 @@ pub async fn calculate_capital_gains(
 
     for activity in account_activities.activities.clone().into_iter() {
         // get the current state of accumulated purchases / sales
-        let symbol_accumulated_buys = match symbol_acb_tracker.get(&activity.symbol) {
+        let symbol_accumulated_purchases = match symbol_acb_tracker.get(&activity.symbol) {
             Some(v) => v,
             None => {
                 &(AccumulatedPurchases {
@@ -31,17 +31,18 @@ pub async fn calculate_capital_gains(
 
         // if the activity is a 'Sell' trade, compute ACB and derive capital gains
         if activity.action == "Sell" {
-            if symbol_accumulated_buys.quantity == 0.0 {
+            if symbol_accumulated_purchases.quantity == 0.0 {
                 // handle case where the API returns bad data (duplicate trade records)
+                println!("Found problematic record: {:?} that registers a sale when there are 0 units owned. Ignoring it.", activity);
                 continue;
             }
 
             // calculate point-in-time adjusted cost base (ACB)
-            let acb_for_symbol = symbol_accumulated_buys.amount / symbol_accumulated_buys.quantity;
+            let acb_for_symbol =
+                symbol_accumulated_purchases.amount / symbol_accumulated_purchases.quantity;
 
             // calculate capital gains
-            let capital_gain_amount =
-                activity.quantity * (acb_for_symbol + (activity.net_amount / activity.quantity));
+            let capital_gain_amount = activity.net_amount - (activity.quantity * acb_for_symbol);
 
             // determine tax year and add to the total gains for that year
             let tax_year = DateTime::parse_from_rfc3339(&activity.settlement_date)?
@@ -57,12 +58,12 @@ pub async fn calculate_capital_gains(
         }
 
         let new_accumulated_buys = {
-            let new_quantity = symbol_accumulated_buys.quantity + activity.quantity;
+            let new_quantity = symbol_accumulated_purchases.quantity + activity.quantity;
             // zero out amount and quantity when the new quantity is 0, as there is no ACB to track anymore
             let new_amount = if new_quantity < 1.0 {
                 0.0
             } else {
-                symbol_accumulated_buys.amount + activity.net_amount
+                symbol_accumulated_purchases.amount + activity.net_amount
             };
 
             AccumulatedPurchases {

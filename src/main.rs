@@ -5,7 +5,9 @@ mod cap_gains_calculator;
 use crate::activities_proxy::get_account_activities;
 use crate::auth_proxy::{get_authorization, AuthorizationDetails};
 use crate::cap_gains_calculator::calculate_capital_gains;
+use itertools::Itertools;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::env;
 use std::fs;
 use toml;
@@ -62,8 +64,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     );
 
     // compute capital gains by year
-    let capital_gains_by_year = calculate_capital_gains(all_activities).await?;
+    let capital_gains_by_year: HashMap<String, f64> =
+        calculate_capital_gains(all_activities).await?;
+    println!("===========================");
     println!("Capital gains by year: {:?}", capital_gains_by_year);
+
+    for year in capital_gains_by_year.keys().sorted() {
+        println!(
+            "Year={}; Capital Gains=CAD {:.2}",
+            year, capital_gains_by_year[year]
+        );
+    }
 
     Ok(())
 }
