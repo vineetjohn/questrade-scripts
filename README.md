@@ -12,7 +12,7 @@ Personal reporting scripts for Questrade, mainly for calculating capital gains i
 - Clone this repo.
 - Register a questrade application and generate a refresh token.
 - Copy and update the contents sample `Questrade.toml` config file such that it contains your account details and refresh token.
-- Run the application/
+- Run the application
   - `cargo run ${PATH_TO_Questrade.toml}`
 
 ## Docker Container
