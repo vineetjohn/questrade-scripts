@@ -1,3 +1,6 @@
+# What is Questrade ?
+Questrade is an online brokerage firm and wealth management firm based in Canada. It is Canada's largest discount broker.
+
 # Questrade Scripts
 
 Personal reporting scripts for Questrade, mainly for calculating capital gains in non-registered accounts.
